@@ -1,4 +1,4 @@
-# @version ^0.2.0
+# @version ^0.3.7
 """
 @notice Mock ERC20 for testing
 """
@@ -65,28 +65,37 @@ def approve(_spender : address, _value : uint256) -> bool:
     return True
 
 
-@external
-def _mint_for_testing(_target: address, _value: uint256) -> bool:
+@internal
+def _mint(_target: address, _value: uint256):
     self.total_supply += _value
     self.balanceOf[_target] += _value
     log Transfer(ZERO_ADDRESS, _target, _value)
 
+
+@external
+def _mint_for_testing(_target: address, _value: uint256) -> bool:
+    self._mint(_target, _value)
     return True
 
 
 @payable
 @external
 def deposit():
-    self.balanceOf[msg.sender] += msg.value
+    self._mint(msg.sender, msg.value)
 
 
 @payable
 @external
 def __default__():
-    self.balanceOf[msg.sender] += msg.value
+    self._mint(msg.sender, msg.value)
 
 
 @external
 def withdraw(_amount: uint256):
     self.balanceOf[msg.sender] -= _amount
+    self.total_supply -= _amount
     raw_call(msg.sender, b"", value=_amount)
+
+@external
+def mybalance() -> uint256:
+    return self.balance
