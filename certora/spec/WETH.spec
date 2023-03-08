@@ -4,6 +4,8 @@ methods {
     balanceOf(address) returns uint256 envfree
     transfer(address, uint256) returns bool
     transferFrom(address, address, uint256) returns bool
+
+    default() => HAVOC_ECF;
 }
 
 ghost uint256 totalTokens;
