@@ -1,21 +1,21 @@
 methods {
-    mybalance() returns uint256 envfree
-    totalSupply() returns uint256 envfree
-    balanceOf(address) returns uint256 envfree
-    transfer(address, uint256) returns bool
-    transferFrom(address, address, uint256) returns bool
+    function mybalance() external returns uint256 envfree;
+    function totalSupply() external returns uint256 envfree;
+    function balanceOf(address) external returns uint256 envfree;
+    //function transfer(address, uint256) external returns bool;
+    //function transferFrom(address, address, uint256) external returns bool;
 
-    default() => HAVOC_ECF;
+    function _.default() external => HAVOC_ECF;
 }
 
-ghost uint256 totalTokens;
+ghost mathint totalTokens;
 
 invariant contract_is_liquid()
   mybalance() == totalSupply()
   { preserved with (env e) { require e.msg.sender != currentContract; } }
 
 invariant contract_is_liquid_ghost()
-  mybalance() == totalTokens
+  to_mathint(mybalance()) == totalTokens
   { preserved with (env e) { require e.msg.sender != currentContract; } }
 
 hook Sstore balanceOf[KEY address adr] uint256 v (uint256 vold) STORAGE {
@@ -50,11 +50,11 @@ rule testTransfer() {
     require e.msg.sender!= to;
     require other != to;
     require other != e.msg.sender;
-    uint256 senderBefore = balanceOf@withrevert(e.msg.sender);
+    mathint senderBefore = balanceOf@withrevert(e.msg.sender);
     assert !lastReverted;
-    uint256 recvBefore = balanceOf@withrevert(to);
+    mathint recvBefore = balanceOf@withrevert(to);
     assert !lastReverted;
-    uint256 otherBefore = balanceOf@withrevert(other);
+    mathint otherBefore = balanceOf@withrevert(other);
     assert !lastReverted;
     transfer(e, to, value);
 
@@ -72,7 +72,7 @@ rule testTransferSelf() {
     /* we check that all balances do not change, other can be any account,
      * even the sender.
      */
-    uint256 otherBefore = balanceOf@withrevert(other);
+    mathint otherBefore = balanceOf@withrevert(other);
     assert !lastReverted;
     transfer(e, to, value);
     assert to_mathint(balanceOf@withrevert(other)) == otherBefore;
@@ -88,11 +88,11 @@ rule testTransferFromDifferent() {
     require from != to;
     require other != to;
     require other != from;
-    uint256 senderBefore = balanceOf@withrevert(from);
+    mathint senderBefore = balanceOf@withrevert(from);
     assert !lastReverted;
-    uint256 recvBefore = balanceOf@withrevert(to);
+    mathint recvBefore = balanceOf@withrevert(to);
     assert !lastReverted;
-    uint256 otherBefore = balanceOf@withrevert(other);
+    mathint otherBefore = balanceOf@withrevert(other);
     assert !lastReverted;
     transferFrom(e, from, to, value);
 
@@ -112,7 +112,7 @@ rule testTransferFromSame() {
     /* we check that all balances do not change, other can be any account,
      * even from or to.
      */
-    uint256 otherBefore = balanceOf@withrevert(other);
+    mathint otherBefore = balanceOf@withrevert(other);
     assert !lastReverted;
     transferFrom(e, from, to, value);
     assert to_mathint(balanceOf@withrevert(other)) == otherBefore;
